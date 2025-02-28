@@ -1,14 +1,12 @@
-package com.ldh.shoppingmall.service;
+package com.ldh.shoppingmall.service.product;
 
 import com.ldh.shoppingmall.dto.ProductDto;
-import com.ldh.shoppingmall.entity.Product;
+import com.ldh.shoppingmall.entity.product.Product;
 import com.ldh.shoppingmall.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -24,8 +22,7 @@ public class ProductService {
         Product product = new Product(productDto.getProductName(),
                 productDto.getDescription(),
                 productDto.getImageUrl(),
-                productDto.getPrice(),
-                LocalDateTime.now());
+                productDto.getPrice());
 
         Product saved = productRepository.save(product);
 
@@ -34,6 +31,15 @@ public class ProductService {
                 saved.getImageUrl(),
                 saved.getPrice());
     }
+
+    public void removeProduct(Long productId) {
+
+        if (!productRepository.existsById(productId))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found.");
+
+        productRepository.deleteById(productId);
+    }
+
 
 
 }

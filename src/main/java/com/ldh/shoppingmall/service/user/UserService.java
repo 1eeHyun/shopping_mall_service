@@ -1,15 +1,13 @@
-package com.ldh.shoppingmall.service;
+package com.ldh.shoppingmall.service.user;
 
 import com.ldh.shoppingmall.dto.UserDto;
-import com.ldh.shoppingmall.entity.User;
+import com.ldh.shoppingmall.entity.user.User;
 import com.ldh.shoppingmall.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -30,8 +28,7 @@ public class UserService {
 
         User user = new User(userDto.getUsername(),
                              passwordEncoder.encode(userDto.getPassword()),
-                             User.Role.USER,
-                             LocalDateTime.now());
+                             User.Role.USER);
 
         userRepository.save(user);
         return new UserDto(userDto.getUsername(), null);

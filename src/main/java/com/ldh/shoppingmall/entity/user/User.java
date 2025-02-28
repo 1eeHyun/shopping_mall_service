@@ -1,10 +1,8 @@
-package com.ldh.shoppingmall.entity;
+package com.ldh.shoppingmall.entity.user;
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Setter
@@ -25,17 +23,13 @@ public class User {
     @Column(nullable = false)
     private Role role;
 
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
-
     public User() {
     }
 
-    public User(String username, String password, Role role, LocalDateTime createdAt) {
+    public User(String username, String password, Role role) {
         this.username = username;
         this.password = password;
         this.role = role;
-        this.createdAt = createdAt;
     }
 
     public enum Role {

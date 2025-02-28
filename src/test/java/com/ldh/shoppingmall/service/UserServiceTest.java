@@ -1,8 +1,9 @@
 package com.ldh.shoppingmall.service;
 
 import com.ldh.shoppingmall.dto.UserDto;
-import com.ldh.shoppingmall.entity.User;
+import com.ldh.shoppingmall.entity.user.User;
 import com.ldh.shoppingmall.repository.UserRepository;
+import com.ldh.shoppingmall.service.user.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,11 +13,12 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 
-import static com.ldh.shoppingmall.entity.User.*;
+import static com.ldh.shoppingmall.entity.user.User.Role;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 
@@ -42,7 +44,7 @@ class UserServiceTest {
 
         // Given
         UserDto userDto = new UserDto("newUser", "password");
-        User mockSaveduser = new User(userDto.getUsername(), "encodedPassword", Role.USER, LocalDateTime.now());
+        User mockSaveduser = new User(userDto.getUsername(), "encodedPassword", Role.USER);
 
         // No exists username
         when(userRepository.findByUsername("newUser")).thenReturn(Optional.empty());
@@ -59,8 +61,8 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("Register Fails When Username Already Exsists")
-    void register_Should_Not_SaveUser_WhenUsernameIsUnique() {
+    @DisplayName("Register Fails When Username Already Exists")
+    void register_ShouldNotSaveUser_WhenUsernameIsUnique() {
 
         // Given
         UserDto userDto = new UserDto("existingUser", "password");
@@ -70,9 +72,41 @@ class UserServiceTest {
         // When and Then
         assertThatThrownBy(() -> userService.register(userDto))
                 .isInstanceOf(ResponseStatusException.class)
-                .hasMessage("Username already exists.");
+                .hasMessage("409 CONFLICT \"Username already exists.\"");
 
 
         verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    @DisplayName("Remove User Success")
+    void removeUser_ShouldDelete_WhenUserExists() {
+
+        // Given
+        Long userId = 1L;
+        when(userRepository.existsById(userId)).thenReturn(true);
+
+        // When
+        userService.removeUser(userId);
+
+        // Then
+        verify(userRepository, times(1)).deleteById(userId);
+    }
+
+    @Test
+    @DisplayName("Remove User Fail")
+    void removeUser_ShouldThrowException_WhenUSerNotFound() {
+
+        // Given
+        Long userId = 1L;
+        when(userRepository.existsById(userId)).thenReturn(false);
+
+        // When and Then
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
+            userService.removeUser(userId);
+        });
+
+        assertEquals("404 NOT_FOUND \"User not found.\"", exception.getMessage());
+        verify(userRepository, never()).deleteById(any());
     }
 }

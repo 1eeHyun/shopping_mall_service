@@ -1,6 +1,6 @@
 package com.ldh.shoppingmall.service;
 
-import com.ldh.shoppingmall.entity.User;
+import com.ldh.shoppingmall.entity.user.User;
 import com.ldh.shoppingmall.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

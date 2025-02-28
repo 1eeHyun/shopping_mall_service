@@ -1,15 +1,16 @@
-package com.ldh.shoppingmall.entity;
+package com.ldh.shoppingmall.entity.product;
 
+import com.ldh.shoppingmall.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
 
 @Entity
 @Setter
 @Getter
-public class Product {
+public class Product extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,19 +26,15 @@ public class Product {
     private String imageUrl;
 
     @Column(nullable = false)
-    private double price;
-
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
+    private BigDecimal price;
 
     public Product() {
     }
 
-    public Product(String productName, String description, String imageUrl, double price, LocalDateTime createdAt) {
+    public Product(String productName, String description, String imageUrl, BigDecimal price) {
         this.productName = productName;
         this.description = description;
         this.imageUrl = imageUrl;
         this.price = price;
-        this.createdAt = createdAt;
     }
 }
