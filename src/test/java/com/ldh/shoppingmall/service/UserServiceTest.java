@@ -10,6 +10,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -68,7 +69,7 @@ class UserServiceTest {
 
         // When and Then
         assertThatThrownBy(() -> userService.register(userDto))
-                .isInstanceOf(IllegalStateException.class)
+                .isInstanceOf(ResponseStatusException.class)
                 .hasMessage("Username already exists.");
 
 
