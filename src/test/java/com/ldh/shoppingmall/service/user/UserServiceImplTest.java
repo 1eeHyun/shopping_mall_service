@@ -1,9 +1,8 @@
-package com.ldh.shoppingmall.service;
+package com.ldh.shoppingmall.service.user;
 
-import com.ldh.shoppingmall.dto.UserDto;
+import com.ldh.shoppingmall.dto.user.UserDto;
 import com.ldh.shoppingmall.entity.user.User;
-import com.ldh.shoppingmall.repository.UserRepository;
-import com.ldh.shoppingmall.service.user.UserService;
+import com.ldh.shoppingmall.repository.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 
-class UserServiceTest {
+class UserServiceImplTest {
 
     @Mock
     private UserRepository userRepository; // Mock Repository
@@ -31,7 +30,7 @@ class UserServiceTest {
     private PasswordEncoder passwordEncoder; // Mock PasswordEncoder
 
     @InjectMocks
-    private UserService userService; // Object that is tested
+    private UserServiceImpl userServiceImpl; // Object that is tested
 
     @BeforeEach
     void beforeEach() {
@@ -54,7 +53,7 @@ class UserServiceTest {
         when(userRepository.save(any(User.class))).thenReturn(mockSaveduser);
 
         // when
-        userService.register(userDto);
+        userServiceImpl.register(userDto);
 
         // then
         verify(userRepository, times(1)).save(any(User.class));
@@ -70,7 +69,7 @@ class UserServiceTest {
         when(userRepository.findByUsername("existingUser")).thenReturn(Optional.of(new User()));
 
         // When and Then
-        assertThatThrownBy(() -> userService.register(userDto))
+        assertThatThrownBy(() -> userServiceImpl.register(userDto))
                 .isInstanceOf(ResponseStatusException.class)
                 .hasMessage("409 CONFLICT \"Username already exists.\"");
 
@@ -87,7 +86,7 @@ class UserServiceTest {
         when(userRepository.existsById(userId)).thenReturn(true);
 
         // When
-        userService.removeUser(userId);
+        userServiceImpl.removeUser(userId);
 
         // Then
         verify(userRepository, times(1)).deleteById(userId);
@@ -103,7 +102,7 @@ class UserServiceTest {
 
         // When and Then
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
-            userService.removeUser(userId);
+            userServiceImpl.removeUser(userId);
         });
 
         assertEquals("404 NOT_FOUND \"User not found.\"", exception.getMessage());

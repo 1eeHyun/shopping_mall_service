@@ -1,4 +1,4 @@
-package com.ldh.shoppingmall.dto;
+package com.ldh.shoppingmall.dto.user;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;

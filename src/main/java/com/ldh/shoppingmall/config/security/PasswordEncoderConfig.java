@@ -1,4 +1,4 @@
-package com.ldh.shoppingmall.config;
+package com.ldh.shoppingmall.config.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

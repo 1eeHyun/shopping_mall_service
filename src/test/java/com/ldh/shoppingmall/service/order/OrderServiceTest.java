@@ -1,14 +1,13 @@
-package com.ldh.shoppingmall.service;
+package com.ldh.shoppingmall.service.order;
 
 
-import com.ldh.shoppingmall.dto.OrderResponseDto;
+import com.ldh.shoppingmall.dto.order.OrderResponseDto;
 import com.ldh.shoppingmall.entity.order.Order;
 import com.ldh.shoppingmall.entity.order.OrderItem;
 import com.ldh.shoppingmall.entity.product.Product;
 import com.ldh.shoppingmall.entity.user.User;
-import com.ldh.shoppingmall.repository.OrderRepository;
-import com.ldh.shoppingmall.repository.UserRepository;
-import com.ldh.shoppingmall.service.order.OrderService;
+import com.ldh.shoppingmall.repository.order.OrderRepository;
+import com.ldh.shoppingmall.repository.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -36,7 +35,7 @@ public class OrderServiceTest {
     private UserRepository userRepository;
 
     @InjectMocks
-    private OrderService orderService;
+    private OrderServiceImpl orderServiceImpl;
 
     private User testUser;
     private Order testOrder;
@@ -93,7 +92,7 @@ public class OrderServiceTest {
         when(orderRepository.save(any(Order.class))).thenReturn(testOrder);
 
         // When
-        OrderResponseDto result = orderService.createOrder(testUser.getId(), testOrderItems);
+        OrderResponseDto result = orderServiceImpl.createOrder(testUser.getId(), testOrderItems);
 
         // Then
         assertNotNull(result);
@@ -111,7 +110,7 @@ public class OrderServiceTest {
         when(orderRepository.findById(1L)).thenReturn(Optional.of(testOrder));
 
         // When
-        OrderResponseDto result = orderService.getOrderById(1L);
+        OrderResponseDto result = orderServiceImpl.getOrderById(1L);
 
         // Then
         assertNotNull(result);
@@ -127,7 +126,7 @@ public class OrderServiceTest {
         when(orderRepository.findById(1L)).thenReturn(Optional.empty());
 
         // When and Then
-        assertThrows(RuntimeException.class, () -> orderService.getOrderById(1L));
+        assertThrows(RuntimeException.class, () -> orderServiceImpl.getOrderById(1L));
     }
 
     @Test
@@ -138,7 +137,7 @@ public class OrderServiceTest {
         when(orderRepository.findById(1L)).thenReturn(Optional.of(testOrder));
 
         // When
-        orderService.cancelOrder(1L);
+        orderServiceImpl.cancelOrder(1L);
 
         // Then
         assertEquals(OrderStatus.CANCELED, testOrder.getStatus());

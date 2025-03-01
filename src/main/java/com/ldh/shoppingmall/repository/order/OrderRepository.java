@@ -1,4 +1,4 @@
-package com.ldh.shoppingmall.repository;
+package com.ldh.shoppingmall.repository.order;
 
 import com.ldh.shoppingmall.entity.order.Order;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,7 +1,7 @@
 package com.ldh.shoppingmall.service;
 
 import com.ldh.shoppingmall.entity.user.User;
-import com.ldh.shoppingmall.repository.UserRepository;
+import com.ldh.shoppingmall.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,7 +13,7 @@ import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
-public class CustomuserDetailsService implements UserDetailsService {
+public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
 

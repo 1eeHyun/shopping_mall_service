@@ -1,9 +1,8 @@
-package com.ldh.shoppingmall.service;
+package com.ldh.shoppingmall.service.product;
 
-import com.ldh.shoppingmall.dto.ProductDto;
+import com.ldh.shoppingmall.dto.product.ProductDto;
 import com.ldh.shoppingmall.entity.product.Product;
-import com.ldh.shoppingmall.repository.ProductRepository;
-import com.ldh.shoppingmall.service.product.ProductService;
+import com.ldh.shoppingmall.repository.product.ProductRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,13 +20,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-class ProductServiceTest {
+class ProductServiceImplTest {
 
     @Mock
     private ProductRepository productRepository; // Mock Repository
 
     @InjectMocks
-    private ProductService productService; // Object that is tested
+    private ProductServiceImpl productServiceImpl; // Object that is tested
 
     @BeforeEach
     void beforeEach() {
@@ -48,7 +47,7 @@ class ProductServiceTest {
         when(productRepository.save(any(Product.class))).thenReturn(mockSavedProduct);
 
         // when
-        productService.addProduct(productDto);
+        productServiceImpl.addProduct(productDto);
 
         // then
         verify(productRepository, times(1)).save(any(Product.class));
@@ -64,7 +63,7 @@ class ProductServiceTest {
         when(productRepository.findByProductName("existingProduct")).thenReturn(Optional.of(new Product()));
 
         // When and Then
-        assertThatThrownBy(() -> productService.addProduct(productDto))
+        assertThatThrownBy(() -> productServiceImpl.addProduct(productDto))
                 .isInstanceOf(ResponseStatusException.class)
                 .hasMessage("409 CONFLICT \"Product with this name already exists.\"");
 
@@ -81,7 +80,7 @@ class ProductServiceTest {
         when(productRepository.existsById(productId)).thenReturn(true);
 
         // When
-        productService.removeProduct(productId);
+        productServiceImpl.removeProduct(productId);
 
         // Then
         verify(productRepository, times(1)).deleteById(productId);
@@ -97,7 +96,7 @@ class ProductServiceTest {
 
         // When and Then
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
-            productService.removeProduct(productId);
+            productServiceImpl.removeProduct(productId);
         });
 
         assertEquals("404 NOT_FOUND \"Product not found.\"", exception.getMessage());

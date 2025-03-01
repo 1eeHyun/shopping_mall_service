@@ -1,4 +1,4 @@
-package com.ldh.shoppingmall.repository;
+package com.ldh.shoppingmall.repository.user;
 
 import com.ldh.shoppingmall.entity.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;

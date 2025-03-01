@@ -1,4 +1,4 @@
-package com.ldh.shoppingmall.dto;
+package com.ldh.shoppingmall.dto.order;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

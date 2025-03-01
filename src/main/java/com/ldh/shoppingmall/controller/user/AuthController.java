@@ -1,9 +1,9 @@
 package com.ldh.shoppingmall.controller.user;
 
-import com.ldh.shoppingmall.dto.UserDto;
+import com.ldh.shoppingmall.dto.user.UserDto;
 import com.ldh.shoppingmall.security.JwtTokenProvider;
-import com.ldh.shoppingmall.service.product.ProductService;
-import com.ldh.shoppingmall.service.user.UserService;
+import com.ldh.shoppingmall.service.product.ProductServiceImpl;
+import com.ldh.shoppingmall.service.user.UserServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -26,12 +26,12 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
-    private final UserService userService;
-    private final ProductService productService;
+    private final UserServiceImpl userServiceImpl;
+    private final ProductServiceImpl productServiceImpl;
 
     @PostMapping("/signup")
     public ResponseEntity<String> register(@Valid @RequestBody UserDto userDto) {
-        userService.register(userDto);
+        userServiceImpl.register(userDto);
         return ResponseEntity.ok("User registered successfully");
     }
 
@@ -60,13 +60,7 @@ public class AuthController {
 
     @DeleteMapping("/users/{userId}")
     public ResponseEntity<String> removeUser(@PathVariable Long userId) {
-        userService.removeUser(userId);
+        userServiceImpl.removeUser(userId);
         return ResponseEntity.ok("User deleted successfully.");
-    }
-
-    @DeleteMapping("/products/{productId}")
-    public ResponseEntity<String> removeProduct(@PathVariable Long productId) {
-        productService.removeProduct(productId);
-        return ResponseEntity.ok("Product deleted successfully.");
     }
 }
