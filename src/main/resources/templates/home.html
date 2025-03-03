@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Home</title>
+    <th:block th:fragment="extraStyles">
+        <link rel="stylesheet" th:href="@{/css/home.css}">
+    </th:block>
+</head>
+<body>
+
+<!-- Content -->
+<th:block th:fragment="content">
+    <!-- Recommended Products -->
+    <h2 class="mt-5">Recommended Products</h2>
+    <div class="row">
+        <div class="col-md-3" th:each="product : ${recommendedProducts}">
+            <div class="card">
+                <img th:src="@{${product.imageUrl}}" class="card-img-top" alt="Product Image">
+                <div class="card-body">
+                    <h5 class="card-title" th:text="${product.productName}">name</h5>
+                    <p class="card-text">$<span th:text="${product.price}"></span></p>
+                    <a th:href="@{/products/{id}(id=${product.id})}" class="btn btn-sm btn-primary">View</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</th:block>
+
+</body>
+</html>

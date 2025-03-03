@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org}" th:replace="~{layout :: layout}">
+<head>
+    <title>Product Detail</title>
+    <th:block th:fragment="extraStyles">
+        <link rel="stylesheet" th:href="@{/css/product.css}">
+    </th:block>
+</head>
+<body>
+
+<!-- Content -->
+<th:block th:fragment="content">
+    <div class="product-container">
+        <!-- Left - product image -->
+        <div class="product-image-container">
+            <img th:src="@{'/' + ${product.imageUrl}}" class="product-image" alt="Product Image">
+        </div>
+
+        <!-- Product detail -->
+        <div class="product-details">
+            <h1 class="product-title" th:text="${product.productName}"></h1>
+            <p class="product-description" th:text="${product.description}"></p>
+            <p class="product-price">Price: $<span th:text="${product.price}"></span></p>
+
+            <!-- Button container (Left: Back to Home / Right: Add to Cart) -->
+            <div class="button-container">
+                <a href="/" class="back-button">Back</a>
+                <a href="#" class="cart-button" th:data-product-id="${product.id}">Add to Cart</a>
+            </div>
+        </div>
+
+    </div>
+
+    <script th:src="@{/js/cart.js}"></script>
+</th:block>
+
+</body>
+</html>

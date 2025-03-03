@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org}" th:replace="~{layout :: layout}">
+<head>
+    <title>Shopping Cart</title>
+    <th:block th:fragment="extraStyles">
+        <link rel="stylesheet" th:href="@{/css/cart.css}">
+    </th:block>
+</head>
+<body>
+<th:block th:fragment="content">
+    <div class="cart-container">
+        <h1>Your Shopping Cart</h1>
+        <table id="cart-table">
+            <thead>
+            <tr>
+                <th>Product Name</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Total</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="item : ${cart?.cartItems}">
+                <td th:text="${item.productName}"></td>
+                <td>
+                    <select class="quantity-select" th:data-product-id="${item.productId}">
+                        <option th:each="i : ${#numbers.sequence(1, 10)}"
+                                th:value="${i}"
+                                th:text="${i}"
+                                th:selected="${i == item.quantity}">
+                        </option>
+                    </select>
+                </td>
+                <td th:text="${item.price}"></td>
+                <td th:text="${item.totalPrice}"></td>
+                <td>
+                    <button class="update-button" th:data-product-id="${item.productId}">Update</button>
+                    <button class="remove-button" th:data-product-id="${item.productId}">Remove</button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="clear-cart">
+            <button class="clear-button">Clear Cart</button>
+        </div>
+    </div>
+
+    <script th:src="@{/js/cart.js}"></script> <!-- External JS file -->
+</th:block>
+</body>
+</html>

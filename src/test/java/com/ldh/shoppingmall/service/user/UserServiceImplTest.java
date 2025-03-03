@@ -71,7 +71,7 @@ class UserServiceImplTest {
         // When and Then
         assertThatThrownBy(() -> userServiceImpl.register(userDto))
                 .isInstanceOf(ResponseStatusException.class)
-                .hasMessage("409 CONFLICT \"Username already exists.\"");
+                .hasMessage("400 BAD_REQUEST \"Username already exists.\"");
 
 
         verify(userRepository, never()).save(any(User.class));

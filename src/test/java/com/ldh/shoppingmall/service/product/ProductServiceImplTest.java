@@ -2,6 +2,7 @@ package com.ldh.shoppingmall.service.product;
 
 import com.ldh.shoppingmall.dto.product.ProductDto;
 import com.ldh.shoppingmall.entity.product.Product;
+import com.ldh.shoppingmall.mapper.ProductMapper;
 import com.ldh.shoppingmall.repository.product.ProductRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -25,13 +26,23 @@ class ProductServiceImplTest {
     @Mock
     private ProductRepository productRepository; // Mock Repository
 
+    @Mock
+    private ProductMapper productMapper;
+
     @InjectMocks
     private ProductServiceImpl productServiceImpl; // Object that is tested
 
     @BeforeEach
     void beforeEach() {
         MockitoAnnotations.openMocks(this); // initialize Mock object
+
+        lenient().when(productMapper.toEntity(any(ProductDto.class)))
+                .thenAnswer(invocation -> {
+                    ProductDto dto = invocation.getArgument(0);
+                    return new Product(dto.getProductName(), dto.getDescription(), dto.getImageUrl(), dto.getPrice());
+                });
     }
+
 
     @Test
     @DisplayName("Add Product Success")

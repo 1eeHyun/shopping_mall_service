@@ -1,6 +1,7 @@
 package com.ldh.shoppingmall.controller.product;
 
-import com.ldh.shoppingmall.service.product.ProductServiceImpl;
+import com.ldh.shoppingmall.entity.product.Product;
+import com.ldh.shoppingmall.service.product.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -15,18 +16,23 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/products")
 public class ProductController {
 
-    private final ProductServiceImpl productServiceImpl;
+    private final ProductService productService;
 
     @GetMapping("/{productId}")
     public String showProductDetail(@PathVariable Long productId,
                                     Model model) {
 
-        return "products/" + productId;
+        Product product = productService.findById(productId);
+
+        if (product == null) return "error/404";
+
+        model.addAttribute("product", product);
+        return "product/detail";
     }
 
-    @DeleteMapping("/products/{productId}")
+    @DeleteMapping("/{productId}")
     public ResponseEntity<String> removeProduct(@PathVariable Long productId) {
-        productServiceImpl.removeProduct(productId);
+        productService.removeProduct(productId);
         return ResponseEntity.ok("Product deleted successfully.");
     }
 }

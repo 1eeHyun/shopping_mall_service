@@ -3,13 +3,16 @@ package com.ldh.shoppingmall.entity.cart;
 import com.ldh.shoppingmall.entity.user.User;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
 public class Cart {
 
     @Id
@@ -21,9 +24,10 @@ public class Cart {
     private User user;
 
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CartItem> cartItems;
+    private List<CartItem> cartItems = new ArrayList<>();
 
     public Cart(User user) {
         this.user = user;
+        this.cartItems = new ArrayList<>();
     }
 }

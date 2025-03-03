@@ -1,27 +1,28 @@
 package com.ldh.shoppingmall.service.cart;
 
-import com.ldh.shoppingmall.dto.cart.CartDto;
-import com.ldh.shoppingmall.dto.cart.CartItemDto;
 import com.ldh.shoppingmall.dto.cart.CartResponseDto;
 import com.ldh.shoppingmall.entity.cart.Cart;
 import com.ldh.shoppingmall.entity.cart.CartItem;
 import com.ldh.shoppingmall.entity.product.Product;
 import com.ldh.shoppingmall.entity.user.User;
+import com.ldh.shoppingmall.mapper.CartMapper;
 import com.ldh.shoppingmall.repository.cart.CartItemRepository;
 import com.ldh.shoppingmall.repository.cart.CartRepository;
 import com.ldh.shoppingmall.repository.product.ProductRepository;
 import com.ldh.shoppingmall.repository.user.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
+
+import static com.ldh.shoppingmall.mapper.CartMapper.convertToResponseDto;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CartServiceImpl implements CartService {
 
     private final CartRepository cartRepository;
@@ -30,91 +31,136 @@ public class CartServiceImpl implements CartService {
     private final UserRepository userRepository;
 
     /**
-     * Get cart
+     * Retrieves the cart for the given user. If the user is a guest, returns a session-based cart.
      */
     @Override
-    public CartDto getCartByUserId(Long userId) {
+    public CartResponseDto getCartByUserId(Long userId) {
+
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID cannot be null for logged-in users.");
+        }
 
         Cart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new EntityNotFoundException("Cart not found for user: " + userId));
+                .orElseGet(() -> createCartForUser(userId));
 
-        List<CartItemDto> cartItems = cart.getCartItems().stream()
-                .map(item -> new CartItemDto(
-                        item.getProduct().getId(),
-                        item.getProduct().getProductName(),
-                        item.getQuantity(),
-                        item.getPrice()
-                ))
-                .collect(Collectors.toList());
-
-        CartDto cartDto = new CartDto();
-        cartDto.setUserId(userId);
-        cartDto.setCartItems(cartItems);
-
-        return cartDto;
+        return convertToResponseDto(cart);
     }
 
     /**
-     * Add a product to a cart
+     * Adds a product to the cart. For guests, stores items in session.
      */
     @Override
     @Transactional
     public CartResponseDto addToCart(Long userId, Long productId, int quantity) {
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        log.info("Request add to Cart - userId: {}, productId: {}, quantity: {}", userId, productId, quantity);
 
+        // Check if the product exists
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new EntityNotFoundException("Product not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Product not found with ID: " + productId));
 
+        log.info("Product found: {}", product.getProductName());
+
+        // Check if user cart exists
         Cart cart = cartRepository.findByUserId(userId)
+                .orElseGet(() -> createCartForUser(userId));  // generate cart id if there is no cart
+
+        // Add to a cart
+        CartItem cartItem = cart.getCartItems().stream()
+                .filter(item -> item.getProduct().getId().equals(productId))
+                .findFirst()
                 .orElseGet(() -> {
-                    Cart newCart = new Cart(user);
-                    return cartRepository.save(newCart);
+                    log.info("Creating new cart item for user: {}", userId);
+                    CartItem newItem = new CartItem(cart, product, 0, product.getPrice());
+                    cart.getCartItems().add(newItem);
+                    return newItem;
                 });
 
-        CartItem cartItem = new CartItem(cart, product, quantity, product.getPrice());
+        cartItem.setQuantity(cartItem.getQuantity() + quantity);
         cartItemRepository.save(cartItem);
 
-        return convertToDto(cart);
+        log.info("Product {} added successfully for user {}. Cart now has {} items.", productId, userId, cart.getCartItems().size());
+
+        return CartMapper.convertToResponseDto(cart);
     }
 
+
+    /**
+     * Removes an item from the cart.
+     */
     @Override
     @Transactional
-    public void removeFromCart(Long cartItemId) {
+    public boolean removeFromCart(Long userId, Long productId) {
+        Cart cart = cartRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Cart not found"));
 
-        CartItem cartItem = cartItemRepository.findById(cartItemId)
-                .orElseThrow(() -> new EntityNotFoundException("Cart item not found"));
+        Optional<CartItem> cartItem = cartItemRepository.findByCartAndProductId(cart, productId);
 
-        cartItemRepository.delete(cartItem);
+        if (cartItem.isEmpty()) {
+            log.warn("Cart item not found for user {} and product {}", userId, productId);
+            return false;
+        }
+
+        log.info("Deleting cartItem: {}", cartItem.get().getId());
+        cartItemRepository.delete(cartItem.get());
+        return true;
     }
 
+
+
+    /**
+     * Clears all items from the cart.
+     */
     @Override
+    @Transactional
     public void clearCart(Long userId) {
 
         Cart cart = cartRepository.findByUserId(userId)
                 .orElseThrow(() -> new EntityNotFoundException("Cart not found for user: " + userId));
 
-        cartItemRepository.deleteAll(cart.getCartItems());
-        cart.setCartItems(new ArrayList<>(cart.getCartItems()));
-        cart.getCartItems().clear();
+        cartItemRepository.deleteByCartId(cart.getId());
+        log.info("Cleared cart for user {}", userId);
+    }
 
-        cartRepository.save(cart);
+    @Override
+    @Transactional
+    public CartResponseDto updateCartItem(Long userId, Long productId, int quantity) {
+
+        Cart cart = cartRepository.findByUserId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Cart not found for user ID: " + userId));
+
+        CartItem cartItem = cart.getCartItems().stream()
+                .filter(item -> item.getProduct().getId().equals(productId))
+                .findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("Cart item not found for product ID: " + productId));
+
+        cartItem.setQuantity(quantity);
+        cartItemRepository.save(cartItem);
+
+        return CartMapper.convertToResponseDto(cart);
     }
 
     /**
-     * Convert Cart Entity to CartResponseDto
+     * Creates a new cart for a user.
      */
-    private CartResponseDto convertToDto(Cart cart) {
-
-        List<CartItemDto> cartItemDtos = cart.getCartItems().stream()
-                .map(item -> new CartItemDto(
-                        item.getProduct().getId(),
-                        item.getProduct().getProductName(),
-                        item.getQuantity(),
-                        item.getPrice()
-                )).collect(Collectors.toList());
-
-        return new CartResponseDto(cart.getId(), cart.getUser().getId(), cartItemDtos);
+    private Cart createCartForUser(User user) {
+        Cart cart = new Cart(user);
+        return cartRepository.save(cart);
     }
+
+    /**
+     * Creates a new cart for a user ID.
+     */
+    private Cart createCartForUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        return createCartForUser(user);
+    }
+
+    public boolean isCartEmpty(Long userId) {
+        return cartRepository.findByUserId(userId)
+                .map(cart -> cart.getCartItems().isEmpty())
+                .orElse(true);
+    }
+
 }

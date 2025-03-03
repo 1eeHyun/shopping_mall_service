@@ -19,30 +19,26 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-
 @ExtendWith(MockitoExtension.class)
 class CartServiceImplTest {
 
     @Mock
     private CartRepository cartRepository;
-
     @Mock
     private CartItemRepository cartItemRepository;
-
     @Mock
     private ProductRepository productRepository;
-
     @Mock
     private UserRepository userRepository;
 
-    @InjectMocks
-    private CartServiceImpl cartService;
+    @InjectMocks private CartServiceImpl cartService;
 
     private User testUser;
     private Product testProduct;
@@ -65,50 +61,59 @@ class CartServiceImplTest {
 
         testCartItem = new CartItem(testCart, testProduct, 1, testProduct.getPrice());
         testCartItem.setId(1L);
-        testCart.setCartItems(List.of(testCartItem));
+        testCart.setCartItems(new ArrayList<>(List.of(testCartItem)));
+
+        lenient().when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+        lenient().when(productRepository.findById(1L)).thenReturn(Optional.of(testProduct));
     }
 
+
+
+
     /**
-     * Test for retrieving cart
+     * Retrieve cart
      */
     @Test
-    @DisplayName("Get Cart By UserId Success")
+    @DisplayName("Get Cart By UserId - Success")
     void testGetCartByUserId_Success() {
-
         when(cartRepository.findByUserId(1L)).thenReturn(Optional.of(testCart));
 
-        var cartDto = cartService.getCartByUserId(1L);
+        CartResponseDto response = cartService.getCartByUserId(1L);
 
-        assertNotNull(cartDto);
-        assertEquals(1L, cartDto.getUserId());
-        assertEquals(1, cartDto.getCartItems().size());
-        assertEquals("Test Product", cartDto.getCartItems().get(0).getProductName());
+        assertNotNull(response);
+        assertEquals(1L, response.getUserId());
+        assertEquals(1, response.getCartItems().size());
+        assertEquals("Test Product", response.getCartItems().get(0).getProductName());
 
         verify(cartRepository, times(1)).findByUserId(1L);
     }
 
     @Test
-    @DisplayName("Get Cart By UserId Fail")
-    void testGetCartByUserId_NotFound() {
+    @DisplayName("Get Cart By UserId - Empty Cart")
+    void testGetCartByUserId_EmptyCart() {
 
         when(cartRepository.findByUserId(1L)).thenReturn(Optional.empty());
+        when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+        when(cartRepository.save(any(Cart.class))).thenReturn(new Cart(testUser));
 
-        assertThrows(EntityNotFoundException.class, () -> cartService.getCartByUserId(1L));
+        CartResponseDto response = cartService.getCartByUserId(1L);
+
+        assertNotNull(response);
+        assertTrue(response.getCartItems().isEmpty());
 
         verify(cartRepository, times(1)).findByUserId(1L);
     }
 
+
     /**
-     * Add product to a cart test
+     * Add product to cart
      */
     @Test
-    @DisplayName("Add Product Success")
+    @DisplayName("Add Product to Cart - Success")
     void testAddToCart_Success() {
-
-        when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
-        when(productRepository.findById(1L)).thenReturn(Optional.of(testProduct));
         when(cartRepository.findByUserId(1L)).thenReturn(Optional.of(testCart));
-        when(cartItemRepository.save(any(CartItem.class))).thenReturn(testCartItem);
+
+        testCart.setCartItems(new ArrayList<>());
 
         CartResponseDto response = cartService.addToCart(1L, 1L, 1);
 
@@ -120,20 +125,8 @@ class CartServiceImplTest {
     }
 
     @Test
-    @DisplayName("Add Product User Not Found Fail")
-    void testAddToCart_UserNotFound() {
-        when(userRepository.findById(1L)).thenReturn(Optional.empty());
-
-        assertThrows(EntityNotFoundException.class, () -> cartService.addToCart(1L, 1L, 1));
-
-        verify(userRepository, times(1)).findById(1L);
-    }
-
-    @Test
-    @DisplayName("Add Product Product Not Found Fail")
+    @DisplayName("Add Product to Cart - Product Not Found")
     void testAddToCart_ProductNotFound() {
-
-        when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
         when(productRepository.findById(1L)).thenReturn(Optional.empty());
 
         assertThrows(EntityNotFoundException.class, () -> cartService.addToCart(1L, 1L, 1));
@@ -142,49 +135,75 @@ class CartServiceImplTest {
     }
 
     /**
-     * Remove an item from a cart
+     * Remove product from cart
      */
     @Test
-    @DisplayName("Remove Item From Cart Success")
+    @DisplayName("Remove Item from Cart - Success")
     void testRemoveFromCart_Success() {
+        when(cartRepository.findByUserId(1L)).thenReturn(Optional.of(testCart));
+        when(cartItemRepository.findByCartAndProductId(testCart, 1L)).thenReturn(Optional.of(testCartItem));
 
-        when(cartItemRepository.findById(1L)).thenReturn(Optional.of(testCartItem));
+        boolean result = cartService.removeFromCart(1L, 1L);
 
-        cartService.removeFromCart(1L);
-
+        assertTrue(result);
         verify(cartItemRepository, times(1)).delete(testCartItem);
     }
 
     @Test
-    @DisplayName("Remove Item From Cart Fail")
+    @DisplayName("Remove Item from Cart - Item Not Found")
     void testRemoveFromCart_ItemNotFound() {
-        when(cartItemRepository.findById(1L)).thenReturn(Optional.empty());
+        when(cartRepository.findByUserId(1L)).thenReturn(Optional.of(testCart));
+        when(cartItemRepository.findByCartAndProductId(testCart, 1L)).thenReturn(Optional.empty());
 
-        assertThrows(EntityNotFoundException.class, () -> cartService.removeFromCart(1L));
+        boolean result = cartService.removeFromCart(1L, 1L);
 
-        verify(cartItemRepository, times(1)).findById(1L);
+        assertFalse(result);
+        verify(cartItemRepository, never()).delete(any());
     }
 
     /**
-     * Clear cart
+     * Empty cart
      */
     @Test
-    @DisplayName("Clear Cart Success")
+    @DisplayName("Clear Cart - Success")
     void testClearCart_Success() {
         when(cartRepository.findByUserId(1L)).thenReturn(Optional.of(testCart));
 
         cartService.clearCart(1L);
 
-        verify(cartItemRepository, times(1)).deleteAll(anyList());
-        verify(cartRepository, times(1)).save(testCart);
+        verify(cartItemRepository, times(1)).deleteByCartId(1L);
     }
 
     @Test
-    @DisplayName("Clear Cart Fail")
+    @DisplayName("Clear Cart - Cart Not Found")
     void testClearCart_CartNotFound() {
         when(cartRepository.findByUserId(1L)).thenReturn(Optional.empty());
 
         assertThrows(EntityNotFoundException.class, () -> cartService.clearCart(1L));
+
+        verify(cartRepository, times(1)).findByUserId(1L);
+    }
+
+    /**
+     * Update cart
+     */
+    @Test
+    @DisplayName("Update Cart Item - Success")
+    void testUpdateCartItem_Success() {
+        when(cartRepository.findByUserId(1L)).thenReturn(Optional.of(testCart));
+
+        CartResponseDto response = cartService.updateCartItem(1L, 1L, 3);
+
+        assertEquals(3, testCartItem.getQuantity());
+        verify(cartItemRepository, times(1)).save(any(CartItem.class));
+    }
+
+    @Test
+    @DisplayName("Update Cart Item - Cart Not Found")
+    void testUpdateCartItem_CartNotFound() {
+        when(cartRepository.findByUserId(1L)).thenReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class, () -> cartService.updateCartItem(1L, 1L, 3));
 
         verify(cartRepository, times(1)).findByUserId(1L);
     }

@@ -1,13 +1,13 @@
 package com.ldh.shoppingmall.service.cart;
 
-import com.ldh.shoppingmall.dto.cart.CartDto;
 import com.ldh.shoppingmall.dto.cart.CartResponseDto;
 
 public interface CartService {
 
-    CartDto getCartByUserId(Long userId);
+    CartResponseDto getCartByUserId(Long userId);
     CartResponseDto addToCart(Long userId, Long productId, int quantity);
-    void removeFromCart(Long cartItemId);
+    CartResponseDto updateCartItem(Long userId, Long productId, int quantity);
+    boolean removeFromCart(Long userId, Long cartItemId);
     void clearCart(Long userId);
-
+    boolean isCartEmpty(Long userId);
 }
