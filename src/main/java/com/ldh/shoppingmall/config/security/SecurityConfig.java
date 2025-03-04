@@ -28,6 +28,9 @@ public class SecurityConfig {
                                 "/css/**", "/js/**", "/images/**", "/api/cart/**", "/cart/**", "/search/**").permitAll()
                         .anyRequest().authenticated()
                 )
+                .sessionManagement(session -> session
+                        .sessionFixation().migrateSession()
+                )
                 .formLogin(login -> login
                         .loginPage("/auth/login")
                         .loginProcessingUrl("/auth/login")

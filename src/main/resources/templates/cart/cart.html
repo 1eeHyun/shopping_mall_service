@@ -44,7 +44,10 @@
 
         <div class="clear-cart">
             <button class="clear-button">Clear Cart</button>
+            <button class="checkout-button" id="checkout-button" th:data-user-id="${userId}">Pay Now</button>
         </div>
+
+
     </div>
 
     <script th:src="@{/js/cart.js}"></script> <!-- External JS file -->

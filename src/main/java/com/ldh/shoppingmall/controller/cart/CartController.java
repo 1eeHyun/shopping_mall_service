@@ -36,7 +36,7 @@ public class CartController {
     public String viewCart(Model model) {
         Optional<Long> userId = getCurrentUserId();
 
-        log.info("🛒 Viewing cart for userId: {}", userId.orElse(null));
+        log.info("Viewing cart for userId: {}", userId.orElse(null));
 
         CartResponseDto cart = userId.map(cartService::getCartByUserId)
                 .orElseGet(guestCartService::getCartByUserId);
@@ -53,12 +53,12 @@ public class CartController {
         Optional<Long> userId = getCurrentUserId();
 
         if (userId.isEmpty()) {
-            log.warn("⚠ Guest users cannot remove specific items from the cart.");
+            log.warn("Guest users cannot remove specific items from the cart.");
             redirectAttributes.addFlashAttribute("error", "You must be logged in to remove items.");
             return "redirect:/cart";
         }
 
-        log.info("🗑 Removing item {} from user {}'s cart", cartItemId, userId.get());
+        log.info("Removing item {} from user {}'s cart", cartItemId, userId.get());
         cartService.removeFromCart(userId.get(), cartItemId);
         redirectAttributes.addFlashAttribute("message", "Item removed successfully");
 

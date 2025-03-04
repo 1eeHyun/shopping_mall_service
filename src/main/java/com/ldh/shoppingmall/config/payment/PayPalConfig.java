@@ -2,11 +2,13 @@ package com.ldh.shoppingmall.config.payment;
 
 import com.paypal.core.PayPalEnvironment;
 import com.paypal.core.PayPalHttpClient;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@Slf4j
 public class PayPalConfig {
 
     @Value("${paypal.client.id}")
@@ -20,6 +22,10 @@ public class PayPalConfig {
 
     @Bean
     public PayPalHttpClient payPalHttpClient() {
+        log.info("PayPal Client ID: " + clientId);
+        log.info("PayPal Secret: " + clientSecret);
+        log.info("PayPal Mode: " + mode);
+
         PayPalEnvironment environment = mode.equals("sandbox")
                 ? new PayPalEnvironment.Sandbox(clientId, clientSecret)
                 : new PayPalEnvironment.Live(clientId, clientSecret);

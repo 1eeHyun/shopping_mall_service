@@ -43,7 +43,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             let quantity = quantityElement.value;
 
-            console.log(`🔄 Updating cart: Product ${productId}, New Quantity: ${quantity}`);
+            console.log(`Updating cart: Product ${productId}, New Quantity: ${quantity}`);
 
             fetch("/api/cart/update", {
                 method: "PUT",
@@ -92,7 +92,7 @@ document.addEventListener("DOMContentLoaded", function () {
             fetch("/api/cart/clear", { method: "DELETE" })
             .then(response => response.json())
             .then(data => {
-                console.log("✅ Cart cleared:", data);
+                console.log("Cart cleared:", data);
                 alert("Cart cleared!");
                 window.location.reload();
             })
@@ -100,5 +100,34 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     } else {
         console.warn("No element found with class '.clear-button'");
+    }
+
+    // Payment
+    const checkoutButton = document.getElementById("checkout-button");
+
+    if (checkoutButton) {
+        checkoutButton.addEventListener("click", function () {
+            // current user id
+            const userId = checkoutButton.getAttribute("data-user-id");
+
+            if (!userId) {
+                alert("Please log in to order");
+            }
+
+            // Request PayPal payment
+            fetch(`/api/payment/paypal?userId=${userId}`, {
+                method: "GET"
+            })
+            .then(response => response.text())
+            .then(url => {
+                if (url.startsWith("http")) {
+                    // PatPal Payment page
+                    window.location.href = url;
+                } else {
+                    alert("Failed to create PayPal order: " + url);
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        });
     }
 });
