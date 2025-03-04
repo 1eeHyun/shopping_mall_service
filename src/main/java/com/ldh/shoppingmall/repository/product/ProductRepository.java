@@ -13,6 +13,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Optional<Product> findByProductName(String productName);
 
+    List<Product> findByProductNameContainingIgnoreCase(String productName);
     @Query("SELECT p FROM Product p ORDER BY p.createdAt DESC LIMIT :limit")
     List<Product> findTopNProducts(int limit);
 }

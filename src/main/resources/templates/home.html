@@ -13,10 +13,11 @@
 
 <!-- Content -->
 <th:block th:fragment="content">
-    <!-- Recommended Products -->
-    <h2 class="mt-5">Recommended Products</h2>
+    <!-- Products -->
+    <h2 class="mt-5" th:text="${title}">Default Title</h2>
+
     <div class="row">
-        <div class="col-md-3" th:each="product : ${recommendedProducts}">
+        <div class="col-md-3" th:each="product : ${products}">
             <div class="card">
                 <img th:src="@{${product.imageUrl}}" class="card-img-top" alt="Product Image">
                 <div class="card-body">

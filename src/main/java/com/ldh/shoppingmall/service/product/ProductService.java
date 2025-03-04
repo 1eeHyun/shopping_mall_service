@@ -10,6 +10,7 @@ public interface ProductService {
     ProductDto addProduct(ProductDto productDto);
     void removeProduct(Long productId);
     List<Product> getRecommendedProducts(int limit);
+    List<Product> searchProductsByName(String name);
     Product findByProductName(String productName);
     Product findById(Long productId);
 }

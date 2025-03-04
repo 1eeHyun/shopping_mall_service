@@ -54,4 +54,9 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.findById(productId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cannot find the product."));
     }
+
+    @Override
+    public List<Product> searchProductsByName(String name) {
+        return productRepository.findByProductNameContainingIgnoreCase(name);
+    }
 }
