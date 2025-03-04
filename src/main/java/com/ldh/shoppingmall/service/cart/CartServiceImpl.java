@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 import static com.ldh.shoppingmall.mapper.CartMapper.convertToResponseDto;
@@ -46,9 +47,7 @@ public class CartServiceImpl implements CartService {
         return convertToResponseDto(cart);
     }
 
-    /**
-     * Adds a product to the cart. For guests, stores items in session.
-     */
+    /** Adds a product to the cart. For guests, stores items in session. */
     @Override
     @Transactional
     public CartResponseDto addToCart(Long userId, Long productId, int quantity) {
@@ -85,9 +84,7 @@ public class CartServiceImpl implements CartService {
     }
 
 
-    /**
-     * Removes an item from the cart.
-     */
+    /** Removes an item from the cart. */
     @Override
     @Transactional
     public boolean removeFromCart(Long userId, Long productId) {
@@ -108,9 +105,7 @@ public class CartServiceImpl implements CartService {
 
 
 
-    /**
-     * Clears all items from the cart.
-     */
+    /** Clears all items from the cart.*/
     @Override
     @Transactional
     public void clearCart(Long userId) {
@@ -122,6 +117,7 @@ public class CartServiceImpl implements CartService {
         log.info("Cleared cart for user {}", userId);
     }
 
+    /** Update Quantity of an item that is in cart */
     @Override
     @Transactional
     public CartResponseDto updateCartItem(Long userId, Long productId, int quantity) {
@@ -138,6 +134,18 @@ public class CartServiceImpl implements CartService {
         cartItemRepository.save(cartItem);
 
         return CartMapper.convertToResponseDto(cart);
+    }
+
+    /** Get total prive in cart*/
+    @Override
+    public BigDecimal getCartTotalAmount(Long userId) {
+
+        Cart cart = cartRepository.findByUserId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Cart not found for user ID: " + userId));
+
+        return cart.getCartItems().stream()
+                .map(item -> item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()))) // 개별 상품 총 가격
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     /**
