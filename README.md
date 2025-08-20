@@ -122,25 +122,3 @@ Run tests with:
 ``` bash
 ./gradlew test
 ```
-
-------------------------------------------------------------------------
-
-## Screenshots
-
-### Home Page
-
-![home](resources/static/images/laptop.jpg)
-
-### Login Page
-
-![login](resources/static/images/mouse.jpg)
-
-### Cart Page
-
-![cart](resources/static/images/keyboard.jpg)
-
-### Product Detail
-
-![product](resources/static/images/monitor.jpg)
-
-------------------------------------------------------------------------
